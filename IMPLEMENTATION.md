@@ -1,6 +1,6 @@
 # Melty Online Ordering System — Prototype Implementation Plan
 
-> **Build status:** Phases 1–3 done, Phase 4 (Checkout) next. See [§29 Build Progress](#29-build-progress) at the end of this document.
+> **Build status:** Phases 1–5 done, Phase 6 (Polish & testing) next. See [§29 Build Progress](#29-build-progress) at the end of this document.
 
 ## 1. Project Context
 
@@ -879,16 +879,17 @@ _Last updated: 2026-10-06. Each phase is reviewed before the next one starts._
 | 1 — Project foundation | ✅ Done |
 | 2 — UI foundation | ✅ Done |
 | 3 — Customer menu | ✅ Done |
-| 4 — Checkout | ⏳ Next |
-| 5 — Admin | ⬜ Not started |
-| 6 — Polish & testing | ⬜ Not started |
+| 4 — Checkout | ✅ Done |
+| 5 — Admin | ✅ Done |
+| 6 — Polish & testing | ⏳ Next |
 
 ## Decisions confirmed with the owner's contact
 
 * All menu items, prices, delivery areas and fees are **placeholders**. Melty sells sweets plus chicken and fries, so the placeholder menu mixes both.
 * The interface is **bilingual**: English plus Egyptian Arabic, with right-to-left layout. Numbers use Western digits, and currency shows as "EGP" in English and "جنيه" in Arabic.
 * **Branding** comes from the storefront photo and the logo: navy, fry-yellow, cyan and warm amber. The logo is currently an SVG recreation.
-* Delivery covers **one city with a few areas**, each with its own fee. There is no pickup, payment or WhatsApp.
+* Delivery covers **one city with a few areas**, each with its own fee. There is no pickup or online payment.
+* **WhatsApp status messages** (confirmed 2026-10-06): on an order, staff press one button to open WhatsApp with a prefilled message for its status (accepted, preparing, out for delivery, delivered, rejected…) and send it themselves. This uses WhatsApp's free click-to-chat link (`wa.me`), not the WhatsApp API, so §17 still holds: no paid service, account setup or automatic sending.
 * The **admin** area has a single login, a polling dashboard and a product availability toggle only. Full menu management could be offered later as a paid extra.
 * Everything runs **locally** until deployment is decided.
 
@@ -937,28 +938,63 @@ _Last updated: 2026-10-06. Each phase is reviewed before the next one starts._
   * A delivery area picker shows the exact fee and total, and the chosen area carries into checkout.
   * It has its own empty state.
 
-## Left to do
-
-### Phase 4 — Checkout (next)
-* Checkout form: name, phone, city/area (from `/api/delivery-areas`), full address and instructions. Client-side validation will match the server's rules. The form is already backed by a session-only draft store.
-* Review screen: totals confirmed by the server through `/api/orders/quote`, with every detail listed in §8.
-* Order submission, then a confirmation screen ("received — Melty will contact you shortly").
-* Handling for products that become unavailable, validation errors and network errors during submission.
+### Phase 4 — Checkout
+* **Three steps** with a progress bar: Details (`/checkout`) → Review (`/checkout/review`) → Done (`/order/confirmed`).
+* **Details form:** name, phone, city, area (with its fee), full address and optional instructions.
+  * Client-side checks use the same rules and error codes as the server; errors show in both languages, and focus jumps to the first problem.
+  * Phone numbers are accepted as 010…, +20…, 0020… or in Arabic digits, and saved as 11 digits.
+  * Details are kept for the browser tab only (`sessionStorage`) and cleared once the order is placed.
+* **Review screen:** every detail from §8. Totals come from the server (`/api/orders/quote`), not the browser. Each section has an Edit link.
+* **Placing the order:** the button can't be double-submitted. The cart and details are cleared afterwards.
+* **Confirmation:** order number, time, delivery area, items and totals, a "What happens next" list, and links back to the menu and home page. It survives a page refresh; there is still no public order lookup.
+* **Problem handling:**
+  * An item or option that sells out mid-checkout sends the customer back to the cart with the item flagged.
+  * A deactivated area sends them back to the details form with a message.
+  * Network errors offer a retry; a failed submission warns that the order may not have been sent.
+  * Opening checkout or review directly with an empty cart redirects to the cart.
+* **Tested in the browser:** the full flow in English on desktop and Arabic on mobile, an item selling out mid-checkout, and direct links. Orders were read back through the admin API, and the 33-check API suite still passes.
 
 ### Phase 5 — Admin
-* `/admin/login`, not linked from the customer site. Admin routes will be guarded on the client, and the server already enforces access.
-* Orders dashboard: tabs per status with counts, a list of orders, polling every 10 seconds and highlighting for new orders.
-* Order detail: customer, delivery, items and options, prices and totals, status changes and a tap-to-call link.
-* Products page with an availability toggle per product.
+* **Separate staff area** at `/admin`, not linked anywhere on the customer site. It has its own header and is a separate code bundle that customers never download. English and Arabic both work.
+* **Login:** `/admin/login` with clear messages for a wrong password, rate-limit lockout, an expired session and logging out. Any admin page opened while logged out redirects to the login page; the server enforces access regardless.
+* **Orders dashboard:**
+  * Status tabs with live counts; the selected tab is kept in the URL.
+  * One row per order: number, time ("12:09 · 5 minutes ago"), customer name and phone, area, item count, total and status.
+  * Refreshes every 10 seconds and immediately when staff return to the tab. A "Connection lost — retrying…" state appears if the server can't be reached.
+  * New orders get a yellow alert, a "Just in" highlight, a count in the browser-tab title such as "(3) Melty Admin", and an optional chime (off by default).
+* **Order detail:**
+  * One-tap next step (Confirm → Start preparing → Send out for delivery → Mark as delivered), plus a manual status picker for corrections.
+  * Rejecting asks for confirmation and reminds staff that the customer isn't notified automatically.
+  * Call and copy buttons for the phone, copy for the address, items with options and prices, totals, and the status history with times.
+* **WhatsApp message to the customer:**
+  * On every order there's a WhatsApp button with a preview of the message for the order's current status, written in the language the customer ordered in.
+  * One click opens WhatsApp (app on phones, WhatsApp Web or desktop on computers) with the chat and message ready; staff can edit before sending.
+  * After any status change the box lights up to remind staff to send the update.
+  * All wording lives in `client/src/config/whatsapp.ts` so the owner can change it.
+* **Products:** sold-out toggles grouped by category, with search. Changes reach the customer menu straight away. A note says full product editing comes later.
+* **Tested in the browser** (21 checks, English on desktop and Arabic on mobile):
+  * login and wrong password
+  * a live order placed while the dashboard was open (alert in about 5 seconds)
+  * status tabs and order detail
+  * status change and reject confirmation
+  * the detail page staying loaded across refreshes
+  * sold-out toggle reaching the public menu
+  * expired session
+  * logout lock-out
+* **Notes:**
+  * The dashboard loads the latest 200 orders, so with more than that the oldest drop out of the tabs. That's fine for a prototype; a real launch would add paging.
+  * Login lockout (10 failed tries per 15 minutes) blocks even the correct password until it expires. That is deliberate brute-force protection.
 
-### Phase 6 — Polish & testing
+## Left to do
+
+### Phase 6 — Polish & testing (next)
 * A complete pass on mobile, desktop and right-to-left layouts; empty, loading and error states; and accessibility.
 * The full customer and admin flows plus every invalid case in §26, tested in the browser.
 * A security review.
 * `ASSUMPTIONS.md` separating placeholder values from confirmed requirements, and a `README.md` with run instructions.
 
 ## Open questions for the owner (unchanged from §23)
-Exact menu, prices and categories · delivery areas and fees · pickup · payment methods · WhatsApp and order communication · staff/admin needs · final branding assets (official logo file and product photos) · opening hours · contact information.
+Exact menu, prices and categories · delivery areas and fees · pickup · payment methods · the wording of the WhatsApp messages, and whether a full WhatsApp API (automatic sending) is ever wanted · staff/admin needs · final branding assets (official logo file and product photos) · opening hours · contact information.
 
 ## Notes
 * Change the Atlas database password before any real deployment, because it was shared in chat.

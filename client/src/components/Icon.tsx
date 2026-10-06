@@ -72,12 +72,49 @@ const paths = {
       <path d="M12 7.5v5.5m0 3.2v.3" />
     </>
   ),
+  bell: (
+    <>
+      <path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15L6 16Z" />
+      <path d="M10 20.5a2.2 2.2 0 0 0 4 0" />
+    </>
+  ),
+  logout: <path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 16l-4-4 4-4M6 12h10" />,
+  refresh: <path d="M20 11a8 8 0 0 0-14.6-4.4M4 4v4h4m-4 5a8 8 0 0 0 14.6 4.4M20 20v-4h-4" />,
+  list: <path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01" />,
+  box: (
+    <>
+      <path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z" />
+      <path d="m4 7.5 8 4.5 8-4.5M12 12v9" />
+    </>
+  ),
+  volume: <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4v-5Zm12 0a3.5 3.5 0 0 1 0 5m2.5-8a7 7 0 0 1 0 11" />,
+  volumeOff: <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4v-5Zm12.5 0 5 5m0-5-5 5" />,
+  copy: (
+    <>
+      <rect x="9" y="9" width="11" height="11" rx="2" />
+      <path d="M5 15V6a2 2 0 0 1 2-2h8" />
+    </>
+  ),
+  lock: (
+    <>
+      <rect x="5" y="10.5" width="14" height="10" rx="2.5" />
+      <path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" />
+    </>
+  ),
+  external: <path d="M14 4h6v6M20 4l-9 9M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4" />,
+  /* chat bubble with a handset, read as "WhatsApp" next to the label */
+  whatsapp: (
+    <>
+      <path d="M4 20l1.2-4A8 8 0 1 1 8.3 19L4 20Z" />
+      <path d="M9.3 8.8c.3-.5.7-.5.9 0l.5 1.2c.1.3 0 .6-.2.8l-.3.3a5 5 0 0 0 2.6 2.6l.3-.3c.2-.2.5-.3.8-.2l1.2.5c.5.2.5.6 0 .9-.6.5-1.4.7-2.2.4a7.6 7.6 0 0 1-4-4c-.3-.8-.1-1.6.4-2.2Z" />
+    </>
+  ),
 } as const;
 
 export type IconName = keyof typeof paths;
 
 /** Icons whose meaning is directional and must mirror in RTL. */
-const DIRECTIONAL: IconName[] = ['arrowRight', 'arrowLeft', 'chevronRight'];
+const DIRECTIONAL: IconName[] = ['arrowRight', 'arrowLeft', 'chevronRight', 'logout', 'external'];
 
 interface Props extends Omit<SVGProps<SVGSVGElement>, 'name'> {
   name: IconName;

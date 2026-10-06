@@ -26,6 +26,11 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+/* busy ≠ unavailable: keep full colour while the request runs */
+.btn[aria-busy='true'] {
+  opacity: 1;
+  cursor: progress;
+}
 .btn--sm {
   height: 38px;
   padding-inline: 16px;
@@ -553,6 +558,20 @@
   border-color: var(--cyan);
   box-shadow: 0 0 0 4px rgba(125, 216, 255, 0.18);
 }
+/* Browser autofill paints inputs light blue with black text — keep them on-theme */
+.input:-webkit-autofill,
+.input:-webkit-autofill:hover,
+.input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--text);
+  caret-color: var(--text);
+  box-shadow: 0 0 0 1000px var(--bg-raised) inset;
+  transition: background-color 9999s;
+}
+.input:-webkit-autofill:focus {
+  box-shadow:
+    0 0 0 1000px var(--bg-raised) inset,
+    0 0 0 4px rgba(125, 216, 255, 0.18);
+}
 .input--textarea {
   height: auto;
   min-height: 100px;
@@ -720,6 +739,11 @@
   animation: spin 0.8s linear infinite;
   flex-shrink: 0;
 }
+/* the default white track is invisible on the yellow button */
+.btn--primary .spinner {
+  border-color: rgba(27, 20, 0, 0.2);
+  border-top-color: currentColor;
+}
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -739,6 +763,17 @@
   to {
     background-position: -200% 0;
   }
+}
+
+/* Full-screen centred spinner / message (also used while the admin bundle loads) */
+.admin-center {
+  min-height: 70vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+.admin-center--inline {
+  min-height: 120px;
 }
 
 .state {

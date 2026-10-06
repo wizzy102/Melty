@@ -63,6 +63,11 @@ export function useCheckout(): CheckoutState {
 
 let areasPromise: Promise<DeliveryArea[]> | null = null;
 
+/** Forget the cached list, e.g. after the server says an area was deactivated. */
+export function invalidateDeliveryAreas() {
+  areasPromise = null;
+}
+
 export function useDeliveryAreas() {
   const [areas, setAreas] = useState<DeliveryArea[] | null>(null);
   const [error, setError] = useState(false);

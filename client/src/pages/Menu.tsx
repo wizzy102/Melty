@@ -7,16 +7,7 @@ import { Icon } from '../components/Icon';
 import { Button } from '../components/ui/Button';
 import { Skeleton, StateMessage } from '../components/ui/States';
 import type { Product } from '../api/types';
-
-/** Lowercase + strip Arabic diacritics so search is forgiving in both languages. */
-const normalize = (s: string) =>
-  s
-    .toLowerCase()
-    .replace(/[ً-ْـ]/g, '')
-    .replace(/[أإآ]/g, 'ا')
-    .replace(/ة/g, 'ه')
-    .replace(/ى/g, 'ي')
-    .trim();
+import { normalizeSearch as normalize } from '../lib/search';
 
 export function Menu() {
   const { t, tr } = useI18n();

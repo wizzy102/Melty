@@ -37,7 +37,7 @@ export function Button({
       {...rest}
     >
       {loading ? <Spinner size={18} /> : icon}
-      {children && <span>{children}</span>}
+      {children && <span className="btn__label">{children}</span>}
       {!loading && iconEnd}
     </button>
   );
@@ -47,7 +47,7 @@ export function ButtonLink({ variant, size, block, icon, iconEnd, children, clas
   return (
     <Link className={cls({ variant, size, block }, className)} {...rest}>
       {icon}
-      {children && <span>{children}</span>}
+      {children && <span className="btn__label">{children}</span>}
       {iconEnd}
     </Link>
   );

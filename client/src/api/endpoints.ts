@@ -31,8 +31,8 @@ export const adminApi = {
   logout: () => api<{ ok: true }>('/admin/auth/logout', { method: 'POST', json: {} }),
   me: () => api<{ admin: { username: string } }>('/admin/auth/me'),
 
-  orders: (status?: OrderStatus) =>
-    api<AdminOrdersList>('/admin/orders' + (status ? `?status=${status}` : '')),
+  /** Latest 200 orders (server maximum) — the dashboard filters by status locally. */
+  orders: () => api<AdminOrdersList>('/admin/orders?limit=200'),
   order: (id: string) => api<{ order: AdminOrderDetail }>(`/admin/orders/${id}`).then((r) => r.order),
   setStatus: (id: string, status: OrderStatus) =>
     api<{ order: AdminOrderDetail }>(`/admin/orders/${id}/status`, { method: 'PATCH', json: { status } }).then(
