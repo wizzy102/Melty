@@ -1,0 +1,10 @@
+node_modules/
+dist/
+*.log
+.DS_Store
+
+# Secrets
+.env
+.env.*
+!.env.example
+melty db.txt

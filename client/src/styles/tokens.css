@@ -1,0 +1,78 @@
+/*
+ * Melty design tokens — taken from the storefront + logo:
+ * night-navy facade, glowing fry-yellow crown, cyan "TY", warm amber wood light.
+ */
+:root {
+  /* Surfaces */
+  --bg: #081329;
+  --bg-raised: #0c1b3a;
+  --surface: #11244a;
+  --surface-2: #17305f;
+  --surface-hover: #1b3769;
+  --border: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.18);
+
+  /* Text */
+  --text: #fff8ec;
+  --text-muted: #aab6cf;
+  --text-faint: #7686a6;
+
+  /* Brand */
+  --yellow: #ffd43b;
+  --yellow-strong: #ffc60a;
+  --on-yellow: #1b1400;
+  --cyan: #7dd8ff;
+  --cyan-strong: #4cc6ff;
+  --amber: #f5a524;
+  --wood: #9a6a3a;
+  --logo-navy: #0e2550;
+
+  /* Feedback */
+  --danger: #ff7a7a;
+  --danger-bg: rgba(255, 122, 122, 0.12);
+  --success: #5ee3a1;
+  --success-bg: rgba(94, 227, 161, 0.12);
+
+  /* Type */
+  --font-display: 'Baloo 2', 'Baloo Bhaijaan 2', system-ui, sans-serif;
+  --font-body: 'Readex Pro', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Shape */
+  --radius-sm: 10px;
+  --radius: 16px;
+  --radius-lg: 24px;
+  --radius-pill: 999px;
+
+  /* Depth */
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  --shadow-sm: 0 4px 14px rgba(0, 0, 0, 0.28);
+  --glow-yellow: 0 0 0 1px rgba(255, 212, 59, 0.35), 0 8px 28px rgba(255, 196, 10, 0.28);
+  --glow-cyan: 0 0 24px rgba(125, 216, 255, 0.35);
+
+  /* Layout */
+  --page-max: 1180px;
+  --gutter: 16px;
+  --header-h: 64px;
+
+  /* Motion */
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur: 180ms;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --gutter: 28px;
+    --header-h: 72px;
+  }
+}
+
+/* Arabic uses the Arabic cut of the same display family */
+:root[lang='ar'] {
+  --font-display: 'Baloo Bhaijaan 2', 'Baloo 2', system-ui, sans-serif;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur: 0ms;
+  }
+}
