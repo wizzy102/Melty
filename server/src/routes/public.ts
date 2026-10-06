@@ -23,14 +23,16 @@ export const publicRouter = Router();
  * inactive categories are not.
  */
 publicRouter.get('/menu', async (_req, res) => {
-  const categories = await Category.find({ active: true }).sort({ displayOrder: 1, _id: 1 }).lean();
-  const products = await Product.find({ category: { $in: categories.map((c) => c._id) } })
-    .sort({ displayOrder: 1, _id: 1 })
-    .lean();
+  // Both queries in parallel (one database round trip instead of two).
+  const [categories, products] = await Promise.all([
+    Category.find({ active: true }).sort({ displayOrder: 1, _id: 1 }).lean(),
+    Product.find().sort({ displayOrder: 1, _id: 1 }).lean(),
+  ]);
+  const activeIds = new Set(categories.map((c) => String(c._id)));
 
   res.json({
     categories: categories.map(serializeCategory),
-    products: products.map(serializeProduct),
+    products: products.filter((p) => activeIds.has(String(p.category))).map(serializeProduct),
   });
 });
 

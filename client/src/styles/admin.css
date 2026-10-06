@@ -331,6 +331,9 @@ a.order-row:hover {
   grid-area: customer;
   display: flex;
   flex-direction: column;
+  /* shrink each line to its text, so a name in the other script (Arabic name in
+     the English UI and vice versa) stays next to the phone instead of flipping sides */
+  align-items: flex-start;
   min-width: 0;
 }
 .order-row__name {

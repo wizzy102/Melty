@@ -1,6 +1,6 @@
 # Melty Online Ordering System — Prototype Implementation Plan
 
-> **Build status:** Phases 1–5 done, Phase 6 (Polish & testing) next. See [§29 Build Progress](#29-build-progress) at the end of this document.
+> **Build status:** All 6 phases done; ready for the owner review. See [§29 Build Progress](#29-build-progress) at the end of this document.
 
 ## 1. Project Context
 
@@ -881,7 +881,7 @@ _Last updated: 2026-10-06. Each phase is reviewed before the next one starts._
 | 3 — Customer menu | ✅ Done |
 | 4 — Checkout | ✅ Done |
 | 5 — Admin | ✅ Done |
-| 6 — Polish & testing | ⏳ Next |
+| 6 — Polish & testing | ✅ Done |
 
 ## Decisions confirmed with the owner's contact
 
@@ -972,7 +972,7 @@ _Last updated: 2026-10-06. Each phase is reviewed before the next one starts._
   * After any status change the box lights up to remind staff to send the update.
   * All wording lives in `client/src/config/whatsapp.ts` so the owner can change it.
 * **Products:** sold-out toggles grouped by category, with search. Changes reach the customer menu straight away. A note says full product editing comes later.
-* **Tested in the browser** (21 checks, English on desktop and Arabic on mobile):
+* **Tested in the browser** (19 checks, English on desktop and Arabic on mobile):
   * login and wrong password
   * a live order placed while the dashboard was open (alert in about 5 seconds)
   * status tabs and order detail
@@ -985,13 +985,27 @@ _Last updated: 2026-10-06. Each phase is reviewed before the next one starts._
   * The dashboard loads the latest 200 orders, so with more than that the oldest drop out of the tabs. That's fine for a prototype; a real launch would add paging.
   * Login lockout (10 failed tries per 15 minutes) blocks even the correct password until it expires. That is deliberate brute-force protection.
 
-## Left to do
+### Phase 6 — Polish & testing
+* **Security review — 3 issues fixed:**
+  * **Login lockout bypass:** the API trusted `X-Forwarded-For` from anyone, so an attacker could fake a new IP per request and never be locked out (reproduced: 12 wrong passwords, no lockout). Now only a configured proxy is trusted (`TRUST_PROXY`, default local dev proxy). After the fix the 11th attempt is blocked.
+  * **Hidden characters:** customer names, addresses and instructions are stripped of control characters and invisible right-to-left override characters, which could make text display misleadingly in the admin.
+  * **Search engines:** admin pages carry a `noindex` tag.
+  * **Also checked, no change needed:** 0 known vulnerabilities in production dependencies (`npm audit`); the cookie, password-hashing, input-validation and error-message rules; customer text is never rendered as HTML; WhatsApp and phone links are encoded.
+* **Speed:** most time is the distance to the Atlas database (~0.2 s per query from here).
+  * A status change now takes one database round trip instead of three (~0.9 s → ~0.25 s), and two staff clicking at once can't conflict.
+  * The menu loads both queries in parallel (~1 s → ~0.45 s).
+* **Tests:**
+  * The API suite is now part of the project: `npm run test:api`, 36 checks covering every invalid case in §26 plus the security fixes.
+  * Browser flows rerun on clean data: checkout in English (desktop) and Arabic (phone, Arabic-digit phone number), an item selling out mid-checkout, the admin flow (19 checks, stable over 3 runs), and the WhatsApp button (7 checks).
+  * Layout sweep of every customer page at 360 / 390 / 768 / 1280 px in both languages (48 page loads, no sideways overflow).
+  * Accessibility check: every button, link and form field has a name, and the page language and direction are set.
+  * Production builds of client and server succeed; the admin is a separate 28 KB file.
+* **Demo data:** the seed now creates 6 varied orders (one per status, two placed in Arabic, with a realistic status history). Data was reset after testing; the old test orders are saved in a local backup.
+* **Docs:** `README.md` (setup, where to put real data, checks, before going live) and `ASSUMPTIONS.md` (confirmed vs placeholder vs owner decisions).
 
-### Phase 6 — Polish & testing (next)
-* A complete pass on mobile, desktop and right-to-left layouts; empty, loading and error states; and accessibility.
-* The full customer and admin flows plus every invalid case in §26, tested in the browser.
-* A security review.
-* `ASSUMPTIONS.md` separating placeholder values from confirmed requirements, and a `README.md` with run instructions.
+## Left to do
+* Review the prototype with the owner (see [ASSUMPTIONS.md](ASSUMPTIONS.md)) and replace placeholders with real data.
+* Decide on deployment (hosting, domain); see "Before going live" in [README.md](README.md).
 
 ## Open questions for the owner (unchanged from §23)
 Exact menu, prices and categories · delivery areas and fees · pickup · payment methods · the wording of the WhatsApp messages, and whether a full WhatsApp API (automatic sending) is ever wanted · staff/admin needs · final branding assets (official logo file and product photos) · opening hours · contact information.

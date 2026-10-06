@@ -81,15 +81,16 @@ adminOrdersRouter.patch('/:id/status', async (req, res) => {
   const id = assertObjectId(req.params.id);
   const { status } = StatusInput.parse(req.body);
 
-  const current = await Order.findById(id).select('status').lean();
-  if (!current) throw notFound('order_not_found');
-
   // Prototype rule: staff may move an order to any status (no enforced
-  // workflow). Only record history when the status actually changes.
-  if (current.status !== status) {
-    await Order.updateOne({ _id: id }, { $set: { status }, $push: { statusHistory: { status, at: new Date() } } });
-  }
+  // workflow). One atomic round trip: only updates (and records history)
+  // when the status actually changes.
+  const order =
+    (await Order.findOneAndUpdate(
+      { _id: id, status: { $ne: status } },
+      { $set: { status }, $push: { statusHistory: { status, at: new Date() } } },
+      { returnDocument: 'after' },
+    ).lean()) ?? (await loadOrder(id));
+  if (!order) throw notFound('order_not_found');
 
-  const order = await loadOrder(id);
-  res.json({ order: detail(order!) });
+  res.json({ order: detail(order) });
 });

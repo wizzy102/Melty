@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
 import { AdminAuthProvider, RequireAdmin } from './AdminAuth';
 import { AdminLayout } from './AdminLayout';
@@ -9,6 +10,15 @@ import '../styles/admin.css';
 
 /** Everything under /admin. Loaded as a separate bundle, so customers never download it. */
 export default function AdminApp() {
+  // Keep staff pages out of search engines.
+  useEffect(() => {
+    const meta = document.createElement('meta');
+    meta.name = 'robots';
+    meta.content = 'noindex, nofollow';
+    document.head.appendChild(meta);
+    return () => meta.remove();
+  }, []);
+
   return (
     <AdminAuthProvider>
       <Routes>

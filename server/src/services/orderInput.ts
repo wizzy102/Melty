@@ -24,6 +24,21 @@ export function normalizeEgyptianPhone(raw: string): string | null {
   return /^01[0125]\d{8}$/.test(digits) ? digits : null;
 }
 
+/**
+ * Free text from customers, cleaned before validation: removes control
+ * characters and invisible bidi overrides (U+202A–202E, U+2066–2069), which
+ * could make a name or address display reversed/misleading in the admin.
+ * Newlines are kept for addresses; runs of spaces are collapsed.
+ */
+const UNSAFE_CHARS = /[\u0000-\u0009\u000B-\u001F\u007F‎‏‪-‮⁦-⁩]/g;
+const cleanText = (multiline = false) =>
+  z
+    .string()
+    .transform((v) => {
+      const s = v.replace(UNSAFE_CHARS, '').replace(/[ \t]+/g, ' ');
+      return (multiline ? s.replace(/\n{3,}/g, '\n\n') : s.replace(/\n/g, ' ')).trim();
+    });
+
 /** What the client is allowed to send for a cart line. No prices. */
 export const CartLineInput = z.object({
   productId: objectId,
@@ -46,7 +61,7 @@ export const CartInput = z
   .max(LIMITS.maxLines, 'cart_too_large');
 
 export const CustomerInput = z.object({
-  name: z.string().trim().min(2, 'name_required').max(LIMITS.maxNameLength, 'too_long'),
+  name: cleanText().pipe(z.string().min(2, 'name_required').max(LIMITS.maxNameLength, 'too_long')),
   phone: z
     .string()
     .trim()
@@ -63,8 +78,8 @@ export const CustomerInput = z.object({
 
 export const DeliveryInput = z.object({
   areaId: objectId,
-  address: z.string().trim().min(5, 'address_required').max(LIMITS.maxAddressLength, 'too_long'),
-  instructions: z.string().trim().max(LIMITS.maxInstructionsLength, 'too_long').default(''),
+  address: cleanText(true).pipe(z.string().min(5, 'address_required').max(LIMITS.maxAddressLength, 'too_long')),
+  instructions: cleanText(true).pipe(z.string().max(LIMITS.maxInstructionsLength, 'too_long')).default(''),
 });
 
 /** POST /api/orders/quote — price a cart for an area (no customer details). */

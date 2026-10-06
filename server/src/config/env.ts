@@ -21,6 +21,12 @@ const EnvSchema = z.object({
 
   // Comma-separated list of allowed browser origins (the client app).
   CLIENT_ORIGIN: z.string().default('http://localhost:5173'),
+
+  // Which proxies may set X-Forwarded-For (used for the client IP in rate limits).
+  // Number of proxy hops in front of the app, or an Express keyword such as "loopback".
+  // Trusting it from anyone would let attackers fake a new IP per request and
+  // dodge the login lockout. Default: the local dev proxy only.
+  TRUST_PROXY: z.string().default('loopback'),
 });
 
 const parsed = EnvSchema.safeParse(process.env);
@@ -38,4 +44,5 @@ export const env = {
   ...parsed.data,
   isProd: parsed.data.NODE_ENV === 'production',
   clientOrigins: parsed.data.CLIENT_ORIGIN.split(',').map((o) => o.trim()).filter(Boolean),
+  trustProxy: /^\d+$/.test(parsed.data.TRUST_PROXY) ? Number(parsed.data.TRUST_PROXY) : parsed.data.TRUST_PROXY,
 };
